@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { ActivityIndicator } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -15,7 +15,7 @@ import { HistoryCard } from "../../components/HistoryCard";
 import { categories } from "../../utils/categories";
 
 
-import { 
+import {
     Container,
     Header,
     Title,
@@ -37,7 +37,7 @@ interface TransactionData {
     date: string;
 }
 
-interface CategoryData{
+interface CategoryData {
     key: string;
     name: string;
     total: number;
@@ -46,15 +46,15 @@ interface CategoryData{
     percent: string;
 }
 
-export function Resume(){
-    const [isLoading, setIsLoading] = useState(true);
-    const [selectedDate,setSelectedDate] = useState(new Date());
+export function Resume() {
+    const [isLoading, setIsLoading] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(new Date());
     const [totalByCategories, setTotalByCategories] = useState<CategoryData[]>([]);
 
     const theme = useTheme();
 
-    function handleDateChange(action: 'next' | 'prev'){
-        if( action === 'next' ){
+    function handleDateChange(action: 'next' | 'prev') {
+        if (action === 'next') {
             setSelectedDate(addMonths(selectedDate, 1))
         } else {
             setSelectedDate(addMonths(selectedDate, -1))
@@ -68,13 +68,13 @@ export function Resume(){
         const responseFormatted = response ? JSON.parse(response) : [];
 
         const expenses = responseFormatted
-        .filter(( expense : TransactionData )=> 
-            expense.type === 'negative' &&
-            new Date(expense.date).getMonth() === selectedDate.getMonth() &&
-            new Date(expense.date).getFullYear() === selectedDate.getFullYear()
-        );
+            .filter((expense: TransactionData) =>
+                expense.type === 'negative' &&
+                new Date(expense.date).getMonth() === selectedDate.getMonth() &&
+                new Date(expense.date).getFullYear() === selectedDate.getFullYear()
+            );
 
-        const expensesTotal = expenses.reduce((acumullator : number, expense : TransactionData) => {
+        const expensesTotal = expenses.reduce((acumullator: number, expense: TransactionData) => {
             return acumullator + Number(expense.amount);
         }, 0);
 
@@ -83,20 +83,20 @@ export function Resume(){
         categories.forEach(category => {
             let categorySum = 0;
 
-            expenses.forEach((expense : TransactionData) =>{
-                if(expense.category === category.key ){
+            expenses.forEach((expense: TransactionData) => {
+                if (expense.category === category.key) {
                     categorySum += Number(expense.amount);
                 }
             });
 
-            if(categorySum > 0) {
+            if (categorySum > 0) {
                 const totalFormatted = categorySum
-                .toLocaleString('pt-BR',{
-                    style: 'currency',
-                    currency: 'BRL'
-                })
+                    .toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL'
+                    })
 
-                const percent = `${(categorySum / expensesTotal * 100 ).toFixed(0)}%`;
+                const percent = `${(categorySum / expensesTotal * 100).toFixed(0)}%`;
 
                 totalByCategory.push({
                     key: category.key,
@@ -117,24 +117,24 @@ export function Resume(){
 
     }
 
-    useFocusEffect(useCallback(()=> {
+    useFocusEffect(useCallback(() => {
         loadData();
-    },[selectedDate]));
+    }, [selectedDate]));
 
-    return(
+    return (
         <Container>
             <Header>
                 <Title>Resumo por categoria</Title>
             </Header>
-            {isLoading ? 
+            {isLoading ?
                 <LoadContainer>
-                    <ActivityIndicator 
-                        color={theme.colors.primary} 
+                    <ActivityIndicator
+                        color={theme.colors.primary}
                         size="large"
                     />
 
-                </LoadContainer> 
-            :
+                </LoadContainer>
+                :
                 <Content
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{
@@ -142,18 +142,18 @@ export function Resume(){
                         paddingBottom: useBottomTabBarHeight()
                     }}
                 >
-                    
+
                     <MonthSelect>
 
-                        <MonthSelectButton onPress={() => handleDateChange('prev') } >
+                        <MonthSelectButton onPress={() => handleDateChange('prev')} >
                             <MonthSelectIcon name="chevron-left" />
                         </MonthSelectButton>
 
                         <Month>
-                            {format(selectedDate, 'MMMM, yyyy', {locale: ptBR})}
+                            {format(selectedDate, 'MMMM, yyyy', { locale: ptBR })}
                         </Month>
 
-                        <MonthSelectButton onPress={() => handleDateChange('next') } >
+                        <MonthSelectButton onPress={() => handleDateChange('next')} >
                             <MonthSelectIcon name="chevron-right" />
                         </MonthSelectButton>
 
@@ -178,7 +178,7 @@ export function Resume(){
 
                     {
                         totalByCategories.map(item => (
-                            <HistoryCard 
+                            <HistoryCard
                                 key={item.key}
                                 title={item.name}
                                 amount={item.totalFormatted}
