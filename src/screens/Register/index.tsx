@@ -8,6 +8,7 @@ import uuid from 'react-native-uuid';
 
 import { useForm } from "react-hook-form";
 import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native'
+import { useAuth } from "../../hooks/auth";
 
 import { InputForm } from "../../components/Form/InputForm";
 import { Button } from "../../components/Form/Button";
@@ -16,7 +17,7 @@ import { CategorySelectButton } from "../../components/Form/CategorySelectButton
 
 import { CategorySelect } from "../CategorySelect";
 
-import { 
+import {
     Container,
     Header,
     Title,
@@ -41,16 +42,16 @@ const schema = Yup.object().shape({
         .required('Valor é obrigatório'),
 });
 
-export function Register(){
+export function Register() {
     const [transactionType, setTransactionType] = useState('');
     const [categoryModalOpen, setCategoryModalOpen] = useState(false);
-    const dataKey = '@ficont:transactions' 
+    const { user } = useAuth();
     const [category, setCategory] = useState({
         key: 'category',
         name: 'Categoria'
     });
 
-    const { navigate }:NavigationProp<ParamListBase> = useNavigation();
+    const { navigate }: NavigationProp<ParamListBase> = useNavigation();
 
     const {
         control,
@@ -61,24 +62,24 @@ export function Register(){
         resolver: yupResolver(schema)
     });
 
-    function handleTransactionTypeSelect(type: 'positive' | 'negative'){
+    function handleTransactionTypeSelect(type: 'positive' | 'negative') {
         setTransactionType(type)
     }
-    
-    function handleOpenSelectCategoryModal(){
+
+    function handleOpenSelectCategoryModal() {
         setCategoryModalOpen(true);
     }
 
-    function handleCloseSelectCategoryModal(){
+    function handleCloseSelectCategoryModal() {
         setCategoryModalOpen(false);
     }
 
-    async function handleRegister(form: FormData){
-        if(!transactionType){
+    async function handleRegister(form: FormData) {
+        if (!transactionType) {
             return Alert.alert('Selecione o tipo da transação');
         }
 
-        if(category.key === 'category' ){
+        if (category.key === 'category') {
             return Alert.alert('Selecione a categoria');
         }
 
@@ -94,6 +95,7 @@ export function Register(){
         }
 
         try {
+            const dataKey = `@ficont:transactions_user:${user.id}`;
             const data = await AsyncStorage.getItem(dataKey);
             const currentData = data ? JSON.parse(data) : [];
 
@@ -128,14 +130,14 @@ export function Register(){
 
     //     loadData()
 
-        // async function removeAll() {
-        //     await AsyncStorage.removeItem(dataKey);
-        // }
+    // async function removeAll() {
+    //     await AsyncStorage.removeItem(dataKey);
+    // }
 
-        // removeAll()
+    // removeAll()
     // },[])
 
-    return(
+    return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <Container>
                 <Header>
@@ -143,7 +145,7 @@ export function Register(){
                 </Header>
 
                 <Form>
-                    <Fields> 
+                    <Fields>
                         <InputForm
                             name="name"
                             control={control}
@@ -160,36 +162,37 @@ export function Register(){
                             error={errors.amount && errors.amount.message}
                         />
 
-                        <TransactionsTipes >                    
-                            <TransactionTypeButton 
+                        <TransactionsTipes >
+                            <TransactionTypeButton
                                 title="Income"
                                 type="up"
                                 onPress={() => handleTransactionTypeSelect('positive')}
-                                isActive={ transactionType === 'positive' }
+                                isActive={transactionType === 'positive'}
                             />
                             <TransactionTypeButton
                                 title="Outcome"
                                 type="down"
                                 onPress={() => handleTransactionTypeSelect('negative')}
-                                isActive={ transactionType === 'negative' }
+                                isActive={transactionType === 'negative'}
                             />
                         </ TransactionsTipes>
 
                         <CategorySelectButton
+                            testID="button-category"
                             title={category.name}
                             onPress={handleOpenSelectCategoryModal}
                         />
-                        
-                    </ Fields> 
 
-                    <Button 
+                    </ Fields>
+
+                    <Button
                         title="Enviar"
                         onPress={handleSubmit(handleRegister)}
                     />
 
                 </Form>
 
-                <Modal visible={categoryModalOpen}>
+                <Modal testID="modal-category" visible={categoryModalOpen}>
                     <CategorySelect
                         category={category}
                         setCategory={setCategory}
